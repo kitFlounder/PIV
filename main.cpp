@@ -21,8 +21,8 @@ const char *output_image = "vector . bmp"; //name of output file
 unsigned char header_buf[1078];
 int FOR_pic[width * heigt];//前方画像の輝度格納
 int BACK_pic[width * heigt];//後方画像の輝度格納
-int REF_window[Wwidth*Wheigt];//参照窓の輝度格納
-int INT_window[Wwidth*Wheigt];//探査窓の輝度格納
+int REF_win[Wwidth*Wheigt];//参照窓の輝度格納
+int INT_win[Wwidth*Wheigt];//探査窓の輝度格納
 int CROSS[(2 * width / Cwidth -1)*(2 * heigt / Cheigt -1)]; //50%overlapping時の相関係数の格納
 const int FPS = 125;                       // FlamePerLate
 const int MPP = 0.033;                     // MaterPerPixel
@@ -72,16 +72,16 @@ int MIN
 // 相互相関関数算出
 int CrossCorr()
 {
-    REF_window[];
-    INT_window[];
+    REF_win[];
+    INT_win[];
     int i, j, k;
     int REF_sum, REF_ave;
     int INT_sum, INT_ave;
     //参照窓と探査窓の平均光強度算出
     for ( i = 0; i < width*heigt; i++)
     {
-        REF_sum = REF_sum + REF_window[i];
-        INT_sum = INT_sum + INT_window[i];
+        REF_sum = REF_sum + REF_win[i];
+        INT_sum = INT_sum + INT_win[i];
     }
     REF_ave = REF_sum / (width * heigt);
     INT_ave = INTEROGATE_sum / (width * heigt);
@@ -89,9 +89,9 @@ int CrossCorr()
     //相互相関係数の計算
     for ( i = 0; i < count; i++)
     {
-        R = R + (REF_window[i]-REF_ave)*(INT_window[i]-INT_ave);
-        R_ref = R_ref + (REF_window[i]-REF_ave)*(REF_window[i]-REF_ave);
-        R_int = R_int + (REF_window[i] - REF_ave) * (REF_window[i] - REF_ave);
+        R = R + (REF_win[i]-REF_ave)*(INT_win[i]-INT_ave);
+        R_ref = R_ref + (REF_win[i]-REF_ave)*(REF_win[i]-REF_ave);
+        R_int = R_int + (REF_win[i] - REF_ave) * (REF_win[i] - REF_ave);
     }
     R_fg = R / (R_ref * R_int);
 }
@@ -149,18 +149,18 @@ int main()
         {
             ​
                 //前方画像の当該部分を参照窓として読み込み、格納
-                REF_window = {};
+                REF_win = {};
             for (k = 0; k < count; k++)
             {
-                REF_window[k][l] = FOR_pic[k][l];
+                REF_win[k][l] = FOR_pic[k][l];
             }
             for (j = 0; i < count; i++) //for各計算格子内の探査窓 jは探査窓
             {
                 // 計算格子内における探査窓の開始点を代入
-                INT_window = {};
+                INT_win = {};
                 for (k = 0; k < count; k++)
                 {
-                    INT_window[k][l] = BACK_pic[yi + k][xi + l]; //後方画像における探査窓の読み込み、格納
+                    INT_win[k][l] = BACK_pic[yi + k][xi + l]; //後方画像における探査窓の読み込み、格納
                 }
                 CrossCorr; //参照窓と当該探査窓における相関係数の算出・関数呼び出し
                 // 相関係数の格納
@@ -174,10 +174,10 @@ int main()
             //各時刻間での速度ベクトル画像の出力呼び出し
             // PlotVector関数の呼び出し 速度ベクトルを与えてベクトル画像を返す
             //(誤ベクトルの検知・除去)
-            REF_window = {}; //参照窓格納部初期化
+            REF_win = {}; //参照窓格納部初期化
             //次の参照窓・計算格子に繰り返すfor文終わり
         }
-        FOR_pic = {};       //前方画像の初期化
+        FOR_pic = 0;       //前方画像の初期化
         FOR_pic = BACK_pic; //後方画像の前方画像への置換(i = i + 1)
         //次の時間的隣接2画像(i + 1, i + 2) に繰り返すfor文終わり
     }

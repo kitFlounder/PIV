@@ -184,3 +184,4 @@ int main()
     return (0);
 }
 //後処理
+//git確認

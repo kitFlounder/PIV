@@ -75,6 +75,8 @@ int main()
             }
             //参照窓の格納
             int ref_sum;
+            int ref_y = off_y+cal_height;
+            int ref_x = off_x+cal_width;
             for (i = 0; i < win_height; i++)
             {
                 for ( j = 0; j < win_width; j++)
@@ -86,6 +88,7 @@ int main()
             int k, l;
             //探査窓の走査
             int inter_sum;
+            unsigned char corr [cal_height / win_height][cal_width / win_width];
             for (k = 0; k < cal_height / win_height; k++)
             {
                 for ( l = 0; l < cal_width/win_width; l++)
@@ -101,17 +104,33 @@ int main()
                             inter[i][j] = cal[off_y + inter_y + i][off_x + inter_x + j];
                             inter_sum = inter_sum + inter[i][j];
                         } 
+
+
+                    }
                     //相互相関係数の算出
                         inter;
                         ref;
-
-                    }
-
-                    //次の探査窓へ
+                        corr[k][l];
+                        //次の探査窓へ
                 }
             }
             
             //相互相関平面の算出
+            int corr_x, corr_y;
+            double max;
+            for (i = 0; i < cal_height / win_height; i++)
+            {
+                for ( j = 0; j < cal_width/win_width; j++)
+                {
+                    if (corr[i][j]>max)
+                    {
+                        i = corr_y;
+                        j = corr_x;
+                        max = corr[i][j];
+                    }
+                }
+            }
+            
             //次の計算格子へ
         }
     }

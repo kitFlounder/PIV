@@ -15,6 +15,8 @@ const int cal_height = 256;
 const int win_width = 32;
 const int win_height = 32;
 
+unsigned char FOR[height][width];
+unsigned char NEXT[height][width];
 unsigned char cal[cal_height][cal_width];
 unsigned char ref[win_height][win_width];
 unsigned char inter[win_height][win_width];
@@ -32,8 +34,6 @@ FILE *outfile;
 
 int main()
 {
-    int i,j;
-    int p, q;
     //1枚目の画像読み込み
     infile1 = fopen(input_image1, "rb");
     if (infile1 == NULL)
@@ -44,6 +44,7 @@ int main()
     fread(header_buf, sizeof(unsigned char), 1078, infile1); // Read Header
     fread(image_in1, sizeof(image_in1), 1, infile1);           // Read 8 bit image intensity
     fclose(infile1);
+
     //2枚目の画像読み込み
     infile2 = fopen(input_image2, "rb");
     if (infile2 == NULL)
@@ -55,7 +56,27 @@ int main()
     fread(image_in2, sizeof(image_in1), 1, infile2);         // Read 8 bit image intensity
     fclose(infile2);
 
-    //計算格子の走査
+    int i, j;
+    //前方画像格納
+    for ( i = 0; i < height; i++)
+    {
+        for ( j = 0; j < width; j++)
+        {
+            FOR[i][j] = image_in1[i][j];
+        }
+    }
+
+    //後方画像格納
+    for (i = 0; i < height; i++)
+    {
+        for (j = 0; j < width; j++)
+        {
+            NEXT[i][j] = image_in2[i][j];
+        }
+    }
+
+    int p, q;
+    //計算格子の走査  
     for (p = 0; p < height / cal_height; p++)
     {
         for ( q = 0; q < width/cal_width; q++)
@@ -63,6 +84,7 @@ int main()
             int off_y, off_x;
             off_y = p*cal_height;
             off_x = q*cal_width;
+
             //計算格子の格納
             for (i = 0; i < cal_height; i++)
             {
@@ -70,9 +92,10 @@ int main()
                 for (j = 0; j < cal_width; j++)
                 {
                     int cal_x = off_x + j;
-                    cal[i][j] = input_image2[off_y + i][off_x + j];
+                    cal[i][j] = NEXT[off_y + i][off_x + j];
                 }
             }
+
             //参照窓の格納
             int ref_sum;
             int ref_y = off_y+cal_height;
@@ -81,11 +104,12 @@ int main()
             {
                 for ( j = 0; j < win_width; j++)
                 {
-                    ref[i][j] = input_image1[off_y + (cal_height - win_height) / 2 + i][off_x + (cal_width - win_width) / 2+j];
+                    ref[i][j] = FOR[off_y + (cal_height - win_height) / 2 + i][off_x + (cal_width - win_width) / 2+j];
                     ref_sum = ref_sum + ref[i][j];
                 }
             }
             int k, l;
+
             //探査窓の走査
             int inter_sum;
             unsigned char corr [cal_height / win_height][cal_width / win_width];
@@ -96,6 +120,7 @@ int main()
                     int inter_y, inter_x;
                     inter_y = k * win_height;
                     inter_x = l * win_height;
+
                     //探査窓の格納
                     for (i = 0; i < win_height; i++)
                     {
@@ -104,14 +129,13 @@ int main()
                             inter[i][j] = cal[off_y + inter_y + i][off_x + inter_x + j];
                             inter_sum = inter_sum + inter[i][j];
                         } 
-
-
                     }
+
                     //相互相関係数の算出
                         inter;
                         ref;
                         corr[k][l];
-                        //次の探査窓へ
+                    //次の探査窓へ
                 }
             }
             
@@ -130,7 +154,12 @@ int main()
                     }
                 }
             }
-            
+
+            //速度ベクトルの算出
+            double u, v;
+            u = (ref_y - corr_y);
+            v = (ref_x - corr_y);
+
             //次の計算格子へ
         }
     }

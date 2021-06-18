@@ -31,8 +31,8 @@ double corr[cal_height / win_height][cal_width / win_width]; //探査窓毎の�
 double u[height / cal_height][width / cal_width];       //計算格子毎のx方向速度
 double v[height / cal_height][width / cal_width];       //計算格子毎のy方向速度
 
-const char *input_image1 = "1.bmp";         //入力する前方画像ファイル名
-const char *input_image2 = "2.bmp";         //入力する後方画像ファイル名
+const char *input_image1 = "01.bmp";         //入力する前方画像ファイル名
+const char *input_image2 = "02.bmp";         //入力する後方画像ファイル名
 const char *output_image = "vector.bmp";    //出力する速度場画像ファイル名
 
 unsigned char header_buf[1078];
@@ -151,9 +151,9 @@ int main()
 
                     //探査窓毎の相互相関係数の算出
                     double R, R_ref, R_inter;
-                    // R = 0;
-                    // R_ref = 0;
-                    // R_inter = 0;
+                    R = 0;
+                    R_ref = 0;
+                    R_inter = 0;
                     for (i = 0; i < win_height; i++)
                     {
                         for ( j = 0; j < win_width ; j++)
@@ -167,8 +167,7 @@ int main()
                     // R_inter = sqrt(R_inter);
                     corr[k][l] = R / (sqrt(R_ref) * sqrt(R_inter));
                     //デバッグ用　探査窓毎の相関係数表示
-                    //printf("INTER(%d , %d),(x,y) = (%d , %d) \n ", k,l,inter_x,inter_y);
-                    printf("CAL(%d , %d),corr(%d , %d) = %lf  \n ", p, q, k, l, corr[k][l]);
+                    printf("CAL(%d , %d),INTER(%d , %d),(x,y) = (%d , %d),corr=%lf,R=%lf,R_ref=%lf,R_inter=%lf \n ", p, q, k,l,inter_x,inter_y , corr[k][l], R, R_ref, R_inter);
                     //次の探査窓へ
                 }
             }
@@ -194,9 +193,7 @@ int main()
             v[p][q] = (ref_x - (cal_x + corr_x * win_width)) ;
 
             //デバッグ用
-            printf("\n CAL(%d , %d)(x,y) = (%d ,%d) \n ", p, q, cal_x, cal_y);
-            printf("CAL(%d , %d)REF(x,y) = (%d ,%d) \n ", p,q,ref_x , ref_y);
-            printf("CAL(%d , %d)MAX = %lf \n", p,q,max);
+            printf("\n CAL(%d , %d)(x,y) = (%d ,%d) ,REF(x,y) = (%d ,%d),MAX = %lf\n ", p, q, cal_x, cal_y,ref_x , ref_y,max);
             printf("CAL(%d , %d)vector(x,y) =(%d,%d) \n\n", p, q, corr_x , corr_y);
             //次の計算格子へ
         }

@@ -8,8 +8,8 @@ DATE: 2020/5/16
 #include <stdlib.h>
 #include <math.h>
 
-const double FPS = 30;      //動画像のフレームレート
-const double PPM = 0.033;   //画像ピクセルごとの距離(m)
+const double FPS = 30;      //1秒ごとの画像枚数(フレームレート)
+const double PPM = 0.033;   //1ピクセルごとの距離(m)
 
 const int width = 1024;     //画像幅
 const int height = 1024;    //画像高さ
@@ -18,12 +18,15 @@ const int cal_height = 256; //計算格子高さ
 const int win_width = 32;   //探査窓・参照窓幅
 const int win_height = 32;  //探査窓・参照窓高さ
 
+const double cal_OW = 0.5;         //計算格子オーバーラップ率
+const double inter_OW = 0.5;       //探査窓オーバーラップ率
+
 unsigned char FOR[height][width];                                   //前方画像格納部
 unsigned char NEXT[height][width];                                  //後方画像格納部
 unsigned char cal[cal_height][cal_width];                           //計算格子格納部
 unsigned char ref[win_height][win_width];                           //参照窓格納部
 unsigned char inter[win_height][win_width];                         //探査窓格納部
-unsigned char corr[cal_height / win_height][cal_width / win_width]; //探査窓毎の相関係数格納部
+double corr[cal_height / win_height][cal_width / win_width]; //探査窓毎の相関係数格納部
 
 double u[height / cal_height][width / cal_width];       //計算格子毎のx方向速度
 double v[height / cal_height][width / cal_width];       //計算格子毎のy方向速度
@@ -77,7 +80,6 @@ int main()
             FOR[i][j] = image_in1[i][j];
         }
     }
-
     //後方画像格納
     for (i = 0; i < height; i++)
     {
@@ -90,13 +92,13 @@ int main()
     //計算格子  
     int cal_y, cal_x;       //計算格子の開始点
     //計算格子の走査
-    for (p = 0; p < height / cal_height; p++)
+    for (p = 0; p < (height / (cal_height * cal_OW)) - 1; p++)
     {
-        for ( q = 0; q < width/cal_width; q++)
+        for (q = 0; q < (width / (cal_width * cal_OW)) - 1; q++)
         {            
             //計算格子の開始点設定
-            cal_y = p * cal_height;
-            cal_x = q * cal_width;
+            cal_y = p * cal_height * cal_OW;
+            cal_x = q * cal_width * cal_OW;
             //計算格子の格納
             for (i = 0; i < cal_height; i++)
             {
@@ -108,7 +110,7 @@ int main()
 
             //参照窓
             int ref_sum;        //参照窓内の輝度の総和
-            double ref_ave;     //参照窓内の輝度の平均
+            double ref_ave ;     //参照窓内の輝度の平均
             int ref_y, ref_x;   //参照窓の開始点
             //参照窓の開始点設定
             ref_y = cal_y + (cal_height - win_height) / 2;
@@ -129,13 +131,13 @@ int main()
             double inter_ave;       //探査窓内の輝度の平均
             int inter_y, inter_x;   //探査窓の開始点
             //探査窓の走査
-            for (k = 0; k < cal_height / win_height; k++)
+            for (k = 0; k < (cal_height / (win_height * inter_OW)) - 1; k++)
             {
-                for ( l = 0; l < cal_width/win_width; l++)
+                for ( l = 0; l < (cal_width / (win_width * inter_OW)) - 1; l++)
                 {
                     //探査窓開始点の設定
-                    inter_y = cal_y + k * win_height;
-                    inter_x = cal_x + l * win_height;
+                    inter_y = cal_y + k * win_height * inter_OW;
+                    inter_x = cal_x + l * win_height * inter_OW;
                     //探査窓の格納
                     for (i = 0; i < win_height; i++)
                     {
@@ -149,6 +151,9 @@ int main()
 
                     //探査窓毎の相互相関係数の算出
                     double R, R_ref, R_inter;
+                    // R = 0;
+                    // R_ref = 0;
+                    // R_inter = 0;
                     for (i = 0; i < win_height; i++)
                     {
                         for ( j = 0; j < win_width ; j++)
@@ -158,39 +163,47 @@ int main()
                             R_inter = R_inter + (inter[i][j] - inter_ave) * (inter[i][j] - inter_ave);
                         }
                     }
-                    corr[k][l] = R / ((R_ref) * (R_inter));
-
+                    // R_ref = sqrt(R_ref);
+                    // R_inter = sqrt(R_inter);
+                    corr[k][l] = R / (sqrt(R_ref) * sqrt(R_inter));
+                    //デバッグ用　探査窓毎の相関係数表示
+                    //printf("INTER(%d , %d),(x,y) = (%d , %d) \n ", k,l,inter_x,inter_y);
+                    printf("CAL(%d , %d),corr(%d , %d) = %lf  \n ", p, q, k, l, corr[k][l]);
                     //次の探査窓へ
                 }
             }
             
             //計算格子毎の相互相関平面の算出
             int corr_x, corr_y; //相関係数最大の探査窓の開始点算出に用いる
-            double max;
-            for (i = 0; i < cal_height / win_height; i++)
+            double max = 0;
+            for (i = 0; i < cal_height / ((win_height * inter_OW)) - 1; i++)
             {
-                for ( j = 0; j < cal_width/win_width; j++)
+                for ( j = 0; j < cal_width / ((win_width * inter_OW)) - 1; j++)
                 {
-                    if (corr[i][j]>max)
+                    if (corr[i][j] > max)
                     {
-                        i = corr_y;
-                        j = corr_x;
+                        corr_y = i ;
+                        corr_x = j ;
                         max = corr[i][j];
                     }
                 }
             }
 
             //計算格子毎の速度ベクトル(ピクセル)の算出
-            u[p][q] = (ref_y - corr_y * win_height) * (1 / PPM) / (1 / FPS);
-            v[p][q] = (ref_x - corr_y * win_width) * (1 / PPM) / (1 / FPS);
+            u[p][q] = (ref_y - (cal_y + corr_y * win_height));
+            v[p][q] = (ref_x - (cal_x + corr_x * win_width)) ;
 
+            //デバッグ用
+            printf("\n CAL(%d , %d)(x,y) = (%d ,%d) \n ", p, q, cal_x, cal_y);
+            printf("CAL(%d , %d)REF(x,y) = (%d ,%d) \n ", p,q,ref_x , ref_y);
+            printf("CAL(%d , %d)MAX = %lf \n", p,q,max);
+            printf("CAL(%d , %d)vector(x,y) =(%d,%d) \n\n", p, q, corr_x , corr_y);
             //次の計算格子へ
         }
     }
-
+    //2画像ごとの速度ベクトル描画
+    
     //誤ベクトル除去
-    //速度ベクトル画像出力
-
 
     return 0;
 }

@@ -23,7 +23,7 @@ unsigned char NEXT[height][width];                                  //後方画�
 unsigned char cal[cal_height][cal_width];                           //計算格子格納部
 unsigned char ref[win_height][win_width];                           //参照窓格納部
 unsigned char inter[win_height][win_width];                         //探査窓格納部
-unsigned char corr[cal_height / win_height][cal_width / win_width]; //探査窓毎の相関係数の格納部
+unsigned char corr[cal_height / win_height][cal_width / win_width]; //探査窓毎の相関係数格納部
 
 double u[height / cal_height][width / cal_width];       //計算格子毎のx方向速度
 double v[height / cal_height][width / cal_width];       //計算格子毎のy方向速度
@@ -148,9 +148,17 @@ int main()
                     inter_ave = inter_sum / (win_height * win_width);
 
                     //探査窓毎の相互相関係数の算出
-                        inter;
-                        ref;
-                        corr[k][l];
+                    double R, R_ref, R_inter;
+                    for (i = 0; i < win_height; i++)
+                    {
+                        for ( j = 0; j < win_width ; j++)
+                        {
+                            R       = R       + (ref[i][j] - ref_ave)     * (inter[i][j] - inter_ave);
+                            R_ref   = R_ref   + (ref[i][j] - ref_ave)     * (ref[i][j] - ref_ave);
+                            R_inter = R_inter + (inter[i][j] - inter_ave) * (inter[i][j] - inter_ave);
+                        }
+                    }
+                    corr[k][l] = R / ((R_ref) * (R_inter));
 
                     //次の探査窓へ
                 }

@@ -9,7 +9,7 @@ DATE: 2020/5/16
 #include <math.h>
 
 const double FPS = 30;      //1秒ごとの画像枚数(フレームレート)
-const double PPM = 0.033;   //1ピクセルごとの距離(m)
+const double MPP = 0.033;   //1ピクセルごとの距離(m)
 
 const int width = 1024;     //画像幅
 const int height = 1024;    //画像高さ
@@ -110,7 +110,7 @@ int main()
 
             //参照窓
             int ref_sum;        //参照窓内の輝度の総和
-            double ref_ave ;     //参照窓内の輝度の平均
+            double ref_ave ;    //参照窓内の輝度の平均
             int ref_y, ref_x;   //参照窓の開始点
             //参照窓の開始点設定
             ref_y = cal_y + (cal_height - win_height) / 2;
@@ -125,7 +125,7 @@ int main()
                 }
             }
             ref_ave = ref_sum / (win_height * win_width);
-
+            
             //探査窓
             int inter_sum;          //探査窓内の輝度の総和
             double inter_ave;       //探査窓内の輝度の平均
@@ -150,10 +150,9 @@ int main()
                     inter_ave = inter_sum / (win_height * win_width);
 
                     //探査窓毎の相互相関係数の算出
-                    double R, R_ref, R_inter;
-                    R = 0;
-                    R_ref = 0;
-                    R_inter = 0;
+                    double R = 0;
+                    double R_ref = 0;   //参照窓の平均差二乗の総和
+                    double R_inter = 0; //探査窓の平均差二乗の総和
                     for (i = 0; i < win_height; i++)
                     {
                         for ( j = 0; j < win_width ; j++)
@@ -163,9 +162,9 @@ int main()
                             R_inter = R_inter + (inter[i][j] - inter_ave) * (inter[i][j] - inter_ave);
                         }
                     }
-                    // R_ref = sqrt(R_ref);
-                    // R_inter = sqrt(R_inter);
-                    corr[k][l] = R / (sqrt(R_ref) * sqrt(R_inter));
+                    R_ref = sqrt(R_ref);
+                    R_inter = sqrt(R_inter);
+                    corr[k][l] = R / ((R_ref) * (R_inter));
                     //デバッグ用　探査窓毎の相関係数表示
                     printf("CAL(%d , %d),INTER(%d , %d),(x,y) = (%d , %d),corr=%lf,R=%lf,R_ref=%lf,R_inter=%lf \n ", p, q, k,l,inter_x,inter_y , corr[k][l], R, R_ref, R_inter);
                     //次の探査窓へ
@@ -173,8 +172,8 @@ int main()
             }
             
             //計算格子毎の相互相関平面の算出
-            int corr_x, corr_y; //相関係数最大の探査窓の開始点算出に用いる
-            double max = 0;
+            int corr_x = 0, corr_y = 0; //相関係数最大の探査窓の開始点算出に用いる(相関係数の最大値を持つ探査窓の開始点)
+            double max = 0;     //相関係数最大値
             for (i = 0; i < cal_height / ((win_height * inter_OW)) - 1; i++)
             {
                 for ( j = 0; j < cal_width / ((win_width * inter_OW)) - 1; j++)
@@ -185,16 +184,21 @@ int main()
                         corr_x = j ;
                         max = corr[i][j];
                     }
+                    else
+                    {
+                        max = max;
+                    }
                 }
             }
 
             //計算格子毎の速度ベクトル(ピクセル)の算出
-            u[p][q] = (ref_y - (cal_y + corr_y * win_height));
-            v[p][q] = (ref_x - (cal_x + corr_x * win_width)) ;
+            u[p][q] = (ref_y - (cal_y + corr_y * win_height) * FPS) * MPP;
+            v[p][q] = (ref_x - (cal_x + corr_x * win_width) * FPS) * MPP;
 
             //デバッグ用
-            printf("\n CAL(%d , %d)(x,y) = (%d ,%d) ,REF(x,y) = (%d ,%d),MAX = %lf\n ", p, q, cal_x, cal_y,ref_x , ref_y,max);
-            printf("CAL(%d , %d)vector(x,y) =(%d,%d) \n\n", p, q, corr_x , corr_y);
+            printf("\n CAL(%d , %d)(x,y) = (%d ,%d) ,REF(x,y) = (%d ,%d)\n ", p, q, cal_x, cal_y,ref_x , ref_y);
+            printf("CAL(%d , %d)MAX(x,y) =(%d,%d),MAX = %lf \n", p, q, corr_x, corr_y, max);
+            printf("CAL(%d , %d)u(x,y) =(%lf,%lf) \n\n", p,q,u[p][q],v[p][q]);
             //次の計算格子へ
         }
     }

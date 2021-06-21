@@ -11,34 +11,34 @@ DATE: 2020/5/16
 const double FPS = 30;      //1秒ごとの画像枚数(フレームレート)
 const double MPP = 0.033;   //1ピクセルごとの距離(m)
 
-const int width = 1024;     //画像幅
-const int height = 1024;    //画像高さ
-const int cal_width = 256;  //計算格子幅
-const int cal_height = 256; //計算格子高さ
-const int win_width = 32;   //探査窓・参照窓幅
-const int win_height = 32;  //探査窓・参照窓高さ
+const int width = 1024;         //画像幅
+const int height = 1024;        //画像高さ
+const int cal_width = 256;      //計算格子幅
+const int cal_height = 256;     //計算格子高さ
+const int win_width = 32;       //探査窓・参照窓幅
+const int win_height = 32;      //探査窓・参照窓高さ
 
-const double cal_OW = 0.5;         //計算格子オーバーラップ率
-const double inter_OW = 0.5;       //探査窓オーバーラップ率
+const double cal_OW = 0.5;      //計算格子オーバーラップ率
+const double inter_OW = 0.5;    //探査窓オーバーラップ率
 
 unsigned char FOR[height][width];                                   //前方画像格納部
 unsigned char NEXT[height][width];                                  //後方画像格納部
 unsigned char cal[cal_height][cal_width];                           //計算格子格納部
 unsigned char ref[win_height][win_width];                           //参照窓格納部
 unsigned char inter[win_height][win_width];                         //探査窓格納部
-double corr[cal_height / win_height][cal_width / win_width]; //探査窓毎の相関係数格納部
+double corr[cal_height / win_height][cal_width / win_width];        //探査窓毎の相関係数格納部
 
 double u[height / cal_height][width / cal_width];       //計算格子毎のx方向速度
 double v[height / cal_height][width / cal_width];       //計算格子毎のy方向速度
 
 const char *input_image1 = "01.bmp";         //入力する前方画像ファイル名
 const char *input_image2 = "02.bmp";         //入力する後方画像ファイル名
-const char *output_image = "vector.bmp";    //出力する速度場画像ファイル名
+const char *output_image = "vector.bmp";     //出力する速度場画像ファイル名
 
 unsigned char header_buf[1078];
-unsigned char image_in1[height][width];
-unsigned char image_in2[height][width];
-unsigned char image_out[height][width];
+unsigned char image_in1[height][width];     //前方画像格納部
+unsigned char image_in2[height][width];     //後方画像格納部
+unsigned char image_out[height][width];     //出力画像格納部
 
 FILE *infile1;
 FILE *infile2;
@@ -191,7 +191,7 @@ int main()
                 }
             }
 
-            //計算格子毎の速度ベクトル(ピクセル)の算出
+            //計算格子毎の速度ベクトル(ピクセル)の算出(参照窓と相関係数最大の探査窓の開始点の変位を使用)
             u[p][q] = (ref_y - (cal_y + corr_y * win_height) * FPS) * MPP;
             v[p][q] = (ref_x - (cal_x + corr_x * win_width) * FPS) * MPP;
 
@@ -203,6 +203,7 @@ int main()
         }
     }
     //2画像ごとの速度ベクトル描画
+
     
     //誤ベクトル除去
 

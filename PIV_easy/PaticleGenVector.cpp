@@ -46,7 +46,7 @@ int main()
         do
         {
             x = width * (double)rand() / RAND_MAX;
-            x2 = x+8;
+            x2 = x+20;
             y = height * (double)rand() / RAND_MAX;
             y2 = y;
             a = (a_max - a_min + 1) * ((double)rand() / RAND_MAX) + a_min; //brightness

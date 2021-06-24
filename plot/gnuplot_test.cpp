@@ -6,7 +6,7 @@ int main()
 
     // gnuplotの起動コマンド
     if ((gp = popen("gnuplot", "w")) == NULL)
-    { // gnuplotをパイプで起動
+    {
         printf("gnuplot can't boot! \n");
         exit(EXIT_FAILURE);
     }

@@ -9,7 +9,8 @@ date:2021.04.19
 #include <time.h>
 const int width = 1024;
 const int height = 1024;
-const char *input_image = "base.bmp";         // name of input file
+const int t = 0.001;
+const char *input_image = "base.bmp";           // name of input file
 const char *output_image1 = "ParticleMap1.bmp"; // name of output file
 const char *output_image2 = "ParticleMap2.bmp"; // name of output file
 const int quantity = 1000;
@@ -46,9 +47,9 @@ int main()
         do
         {
             x = width * (double)rand() / RAND_MAX;
-            x2 = x+20;
+            x2 = x + t * sin(2 * M_PI * x / width) * cos(2 * M_PI * y / height);
             y = height * (double)rand() / RAND_MAX;
-            y2 = y;
+            y2 = y - t * cos(2 * M_PI * x / width) * sin(2 * M_PI * y / height);
             a = (a_max - a_min + 1) * ((double)rand() / RAND_MAX) + a_min; //brightness
         } 
         while (x,x2 == width || y,y2 == height || a == a_max + 1);

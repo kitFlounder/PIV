@@ -13,26 +13,32 @@ const double MPP = 0.033;   //1ピクセルごとの距離(m)
 
 const int width = 1024;         //画像幅
 const int height = 1024;        //画像高さ
-const int cal_width = 128;      //計算格子幅
-const int cal_height = 128;     //計算格子高さ
-const int win_width = 32;       //探査窓・参照窓幅
-const int win_height = 32;      //探査窓・参照窓高さ
+const int cal_width = 256;      //計算格子幅
+const int cal_height = 256;     //計算格子高さ
+const int win_width = 128;       //探査窓・参照窓幅
+const int win_height = 128;      //探査窓・参照窓高さ
 
 const double cal_OW = 0.5;      //計算格子オーバーラップ率
-const double inter_OW = 0.5;    //探査窓オーバーラップ率
+const int inter_OW = 1;      //探査窓移動幅(<inter_height,inter_width)
 
 unsigned char FOR[height][width];                                   //前方画像格納部
 unsigned char NEXT[height][width];                                  //後方画像格納部
 unsigned char cal[cal_height][cal_width];                           //計算格子格納部
 unsigned char ref[win_height][win_width];                           //参照窓格納部
 unsigned char inter[win_height][win_width];                         //探査窓格納部
-double corr[cal_height / win_height][cal_width / win_width];        //探査窓毎の相関係数格納部
 
-double u[height / cal_height][width / cal_width];       //計算格子毎のx方向速度
-double v[height / cal_height][width / cal_width];       //計算格子毎のy方向速度
+const int win_yq = cal_height - win_height-1;   //探査窓の個数
+const int win_xq = cal_width - win_width-1;     //探査窓の個数
+double corr[win_yq][win_xq];                                                    //探査窓毎の相関係数格納部
 
-const char *input_image1 = "01.bmp";         //入力する前方画像ファイル名
-const char *input_image2 = "02.bmp";         //入力する後方画像ファイル名
+const int cal_yq = height / (cal_height * cal_OW) - (1 / cal_OW - 1);    //計算格子の個数
+const int cal_xq = width / (cal_width * cal_OW) - (1 / cal_OW - 1);      //計算格子の個数
+double u[cal_yq][cal_xq];                                                //計算格子毎のx方向速度
+double v[cal_yq][cal_xq];                                                //計算格子毎のy方向速度
+double U[cal_yq][cal_xq];                                                //計算格子毎の速度絶対値
+
+const char *input_image1 = "ParticleMap1.bmp";         //入力する前方画像ファイル名
+const char *input_image2 = "ParticleMap1.bmp";         //入力する後方画像ファイル名
 const char *output_image = "vector.bmp";     //出力する速度場画像ファイル名
 
 unsigned char header_buf[1078];
@@ -113,9 +119,9 @@ int main()
     //計算格子  
     int cal_y, cal_x;       //計算格子の開始点
     //計算格子の走査
-    for (p = 0; p < (height / (cal_height * cal_OW)) - 1; p++)
+    for (p = 0; p < cal_yq; p++)
     {
-        for (q = 0; q < (width / (cal_width * cal_OW)) - 1; q++)
+        for (q = 0; q < cal_xq; q++)
         {            
             //計算格子の開始点設定
             cal_y = p * cal_height * cal_OW;
@@ -152,13 +158,13 @@ int main()
             double inter_ave;       //探査窓内の輝度の平均
             int inter_y, inter_x;   //探査窓の開始点
             //探査窓の走査
-            for (k = 0; k < (cal_height / (win_height * inter_OW)) - 1; k++)
+            for (k = 0; k < win_yq; k++)
             {
-                for ( l = 0; l < (cal_width / (win_width * inter_OW)) - 1; l++)
+                for (l = 0; l < win_xq; l++)
                 {
                     //探査窓開始点の設定
-                    inter_y = cal_y + k * win_height * inter_OW;
-                    inter_x = cal_x + l * win_height * inter_OW;
+                    inter_y = cal_y + k * inter_OW;
+                    inter_x = cal_x + l * inter_OW;
                     //探査窓の格納
                     for (i = 0; i < win_height; i++)
                     {
@@ -195,9 +201,9 @@ int main()
             //計算格子毎の相互相関平面の算出
             int corr_x = 0, corr_y = 0; //相関係数最大の探査窓の開始点算出に用いる(相関係数の最大値を持つ探査窓の開始点)
             double max = 0;     //相関係数最大値
-            for (i = 0; i < (cal_height / (win_height * inter_OW)) - 1; i++)
+            for (i = 0; i < cal_yq; i++)
             {
-                for ( j = 0; j < (cal_width / (win_width * inter_OW)) - 1; j++)
+                for ( j = 0; j < cal_xq; j++)
                 {
                     if (corr[i][j] > max)
                     {
@@ -216,8 +222,10 @@ int main()
             u[p][q] = (((cal_y + corr_y * inter_OW * win_height) - ref_y) * FPS) * MPP;
             v[p][q] = (((cal_x + corr_x * inter_OW * win_width) - ref_x) * FPS) * MPP;
 
+            U[p][q] = sqrt(u[p][q] * u[p][q] + v[p][q] * v[p][q]);
+
             //デバッグ用
-            printf("\n CAL(%d , %d)(x,y) = (%d ,%d) ,REF(x,y) = (%d ,%d)\n ", p, q, cal_x, cal_y,ref_x , ref_y);
+            printf("\n CAL(%d , %d)(x,y) = (%d ,%d) ,REF(x,y) = (%d ,%d)\n ", p, q, cal_x, cal_y, ref_x, ref_y);
             printf("CAL(%d , %d)MAX(x,y) =(%d,%d),MAX = %lf \n", p, q, corr_x, corr_y, max);
             printf("CAL(%d , %d)u(x,y) =(%lf,%lf) \n\n", p,q,u[p][q],v[p][q]);
             //次の計算格子へ
@@ -233,7 +241,7 @@ int main()
     {
         for (j = 0; j < (width / (cal_width * cal_OW))-1; j++)
         {
-            fprintf(outfile, "%d \t %d \t %.5lf \t %.5lf \t %.5lf \n", i, j, u[i][j], v[i][j], sqrt(u[i][j] * u[i][j] + v[i][j] * v[i][j]));
+            fprintf(outfile, "%d \t %d \t %.5lf \t %.5lf \t  \n", i, j, u[i][j], v[i][j]);
         }
         fprintf(outfile, "\n");
     }

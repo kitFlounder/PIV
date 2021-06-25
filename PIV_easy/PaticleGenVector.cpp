@@ -9,11 +9,11 @@ date:2021.04.19
 #include <time.h>
 const int width = 1024;
 const int height = 1024;
-const int t = 0.001;
+const int t = 10;
 const char *input_image = "base.bmp";           // name of input file
 const char *output_image1 = "ParticleMap1.bmp"; // name of output file
 const char *output_image2 = "ParticleMap2.bmp"; // name of output file
-const int quantity = 1000;
+const int quantity = 500;
 const int a_max = 255;
 const int a_min = 128;
 const int setting_ave = 70;
@@ -42,14 +42,17 @@ int main()
         double a;
         int x,x2;
         int y,y2;
+        double u, v;
         int i = 0;
         int j = 0;
         do
         {
             x = width * (double)rand() / RAND_MAX;
-            x2 = x + t * sin(2 * M_PI * x / width) * cos(2 * M_PI * y / height);
             y = height * (double)rand() / RAND_MAX;
-            y2 = y - t * cos(2 * M_PI * x / width) * sin(2 * M_PI * y / height);
+            u = t * sin(M_PI * x / width) * cos(M_PI * y / height);
+            v = - t * cos(M_PI * x / width) * sin(M_PI * y / height);
+            x2 = x + (int)u;
+            y2 = y + (int)v;
             a = (a_max - a_min + 1) * ((double)rand() / RAND_MAX) + a_min; //brightness
         } 
         while (x,x2 == width || y,y2 == height || a == a_max + 1);

@@ -13,11 +13,11 @@ const int t = 10;
 const char *input_image = "base.bmp";           // name of input file
 const char *output_image1 = "ParticleMap1.bmp"; // name of output file
 const char *output_image2 = "ParticleMap2.bmp"; // name of output file
-const int quantity = 500;
+const int quantity = 4000;
 const int a_max = 255;
 const int a_min = 128;
-const int setting_ave = 70;
-const int setting_var = 20;
+const int setting_ave = 20;
+const int setting_var = 5;
 const int mpp = 2; //micrometer per pixel
 unsigned char header_buf[1078];
 unsigned char image_out1[height][width];

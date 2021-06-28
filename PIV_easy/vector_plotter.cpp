@@ -7,8 +7,8 @@ DATE: 2018.08.01
 #include <sys/stat.h>
 const int width = 1024;     //画像幅
 const int height = 1024;    //画像高さ
-const int cal_width = 128;  //計算格子幅
-const int cal_height = 128; //計算格子高さ
+const int cal_width = 64;  //計算格子幅
+const int cal_height = 64; //計算格子高さ
 const int win_width = 32;   //探査窓・参照窓幅
 const int win_height = 32;  //探査窓・参照窓高さ
 const double cal_OW = 0.5;  //計算格子オーバーラップ率
@@ -16,12 +16,12 @@ const double inter_OW = 0.5; //探査窓オーバーラップ率
 
 const char *xxlabel = "{/Times-New-Roman:Italic=20 x} [pixel]";
 const char *yylabel = "{/Times-New-Roman:Italic=20 y} [pixel]";
-const char *cb_label = "{/Symbol:Italic=20 U} [m/sec]"; //color bar range min
+const char *cb_label = "{/Times-New-Roman:Italic=20 U} [m/sec]"; //color bar range min
 const double v_r = 1.0;                                 //magnified ratio for vector length
-const int x_min = 0;                                    //x range min
-const int x_max = width / (cal_width * cal_OW);         //x range max
-const int y_min = 0;                                    //y range min
-const int y_max = 2 * height / (cal_height * cal_OW);   //y range max
+const int x_min = -1;                                    //x range min
+const int x_max = width / (cal_width * cal_OW) - (1 / cal_OW - 1); //x range max
+const int y_min = -1;                                    //y range min
+const int y_max = height / (cal_height * cal_OW) - (1 / cal_OW - 1); //y range max
 const int cb_min = 0;                                   //color bar range min
 const float cb_max = 1.5;                               //color bar range max
 const char *read_file_dir = "01_plot_2dvec_vector";
@@ -42,14 +42,10 @@ int main()
 {
     mode_t mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
     mkdir(write_file_dir, mode);
-    int i = 0;
-    int UP = 0;
-    while (UP == 0)
-    {
-        i++;
-        sprintf(read_file, "%s//%s%06d.dat", read_file_dir, read_file_header, i);
-        printf("%s//%s%06d.dat\n", read_file_dir, read_file_header, i);
-        readfile = fopen(read_file, "w");
+
+        sprintf(read_file, "%s//%s.dat", read_file_dir, read_file_header);
+        printf("%s//%s.dat\n", read_file_dir, read_file_header);
+        readfile = fopen(read_file, "rb");
         fclose(readfile);
         if ((gp = popen("gnuplot -persist", "w")) == NULL)
         {
@@ -79,11 +75,11 @@ int main()
         fprintf(gp, "set palette rgbformulae 22,13,-31\n");
 
         fprintf(gp, "set pm3d map\n"); // <steps in scan>,<steps between scans>
-        fprintf(gp, "splot '%s//%s%06d.dat'  using 2:1:5 with pm3d, '%s//%s%06d.dat' using 2:1:($1*0.0):(%lf*$5):(%lf*$4):($1*0.0) with vectors head filled lt 2 lc 'black' \n", read_file_dir, read_file_header, i, read_file_dir, read_file_header, i, v_r, v_r);
+        fprintf(gp, "splot '%s//%s.dat'  using 2:1:4:3:(sqrt($4*$4+$3*$3)) with pm3d, '%s//%s.dat' using ($2):($1):($1*0.0):(%lf*$4/sqrt($4*$4+$3*$3)):(%lf*$3/sqrt($4*$4+$3*$3)):($1*0.0) with vectors head filled lt 2 lc 'black' \n", read_file_dir, read_file_header, read_file_dir, read_file_header, v_r, v_r);
         fflush(gp);            //Clean up Data
         fprintf(gp, "exit\n"); // Quit gnuplot
 
         pclose(gp);
-    }
+    
     return (0);
 }

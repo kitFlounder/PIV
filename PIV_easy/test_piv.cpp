@@ -13,19 +13,19 @@ const double MPP = 0.01;   //1ピクセルごとの距離(m)
 
 const int width = 1024;         //画像幅
 const int height = 1024;        //画像高さ
-const int cal_width = 256;      //計算格子幅
-const int cal_height = 256;     //計算格子高さ
-const int win_width = 128;       //探査窓・参照窓幅
-const int win_height = 128;      //探査窓・参照窓高さ
+const int cal_width = 64;      //計算格子幅
+const int cal_height = 64;     //計算格子高さ
+const int win_width = 32;       //探査窓・参照窓幅
+const int win_height = 32;      //探査窓・参照窓高さ
 
 const double cal_OW = 0.5;      //計算格子オーバーラップ率
 const int inter_OW = 1;      //探査窓移動幅(<inter_height,inter_width)
 
-unsigned char FOR[height][width];                                   //前方画像格納部
-unsigned char NEXT[height][width];                                  //後方画像格納部
-unsigned char cal[cal_height][cal_width];                           //計算格子格納部
-unsigned char ref[win_height][win_width];                           //参照窓格納部
-unsigned char inter[win_height][win_width];                         //探査窓格納部
+unsigned char FOR[height][width];             //前方画像格納部
+unsigned char NEXT[height][width];            //後方画像格納部
+unsigned char cal[cal_height][cal_width];     //計算格子格納部
+unsigned char ref[win_height][win_width];     //参照窓格納部
+unsigned char inter[win_height][win_width];   //探査窓格納部
 
 const int win_yq = cal_height - win_height;   //計算格子毎の探査窓の個数
 const int win_xq = cal_width - win_width;     //計算格子毎の探査窓の個数
@@ -40,9 +40,9 @@ double u[cal_yq][cal_xq];                                                //計�
 double v[cal_yq][cal_xq];                                                //計算格子毎のy方向速度
 double U[cal_yq][cal_xq];                                                //計算格子毎の速度絶対値
 
-const char *input_image1 = "ParticleMap1.bmp";         //入力する前方画像ファイル名
-const char *input_image2 = "ParticleMap1.bmp";         //入力する後方画像ファイル名
-const char *output_image = "vector.bmp";     //出力する速度場画像ファイル名
+const char *input_image1 = "ParticleMap1.bmp";    //入力する前方画像ファイル名
+const char *input_image2 = "ParticleMap2.bmp";    //入力する後方画像ファイル名
+const char *output_image = "vector.bmp";          //出力する速度場画像ファイル名
 
 unsigned char header_buf[1078];
 unsigned char image_in1[height][width];     //前方画像格納部
@@ -52,7 +52,7 @@ unsigned char image_out[height][width];     //出力画像格納部
 //Graph parameters for GNU
 const char *xxlabel = "{/Times-New-Roman:Italic=20 x} [pixel]";
 const char *yylabel = "{/Times-New-Roman:Italic=20 y} [pixel]";
-const char *cb_label = "{/Symbol:Italic=20 U} [m/sec]";                              //color bar range min
+const char *cb_label = "{/Times-New-Roman:Italic=20 U} [m/sec]";                     //color bar range min
 const double v_r = 1.0;                                                              //magnified ratio for vector length
 const int x_min = 0;                                                                 //x range min
 const int x_max = width/(cal_width*cal_OW);                                          //x range max
@@ -107,7 +107,7 @@ int main()
     {
         for ( j = 0; j < width; j++)
         {
-            FOR[i][j] = 0;                  //初期化
+            // FOR[i][j] = 0;                  //初期化
             FOR[i][j] = image_in1[i][j];    //格納
         }
     }
@@ -116,13 +116,14 @@ int main()
     {
         for (j = 0; j < width; j++)
         {
-            NEXT[i][j] = 0;                 //初期化
+            // NEXT[i][j] = 0;                 //初期化
             NEXT[i][j] = image_in2[i][j];   //格納
         }
     }
 
     //計算格子
-    int cal_y = 0, cal_x = 0; //計算格子の開始点
+    int cal_y = 0;
+    int cal_x = 0; //計算格子の開始点
     //計算格子の走査
     for (p = 0; p < cal_yq; p++)
     {
@@ -136,7 +137,7 @@ int main()
             {
                 for (j = 0; j < cal_width; j++)
                 {
-                    // cal[i][j] = 0;                              //初期化
+                    cal[i][j] = 0;                              //初期化
                     cal[i][j] = NEXT[cal_y + i][cal_x + j];     //格納
                 }
             }
@@ -144,7 +145,8 @@ int main()
             //参照窓
             int ref_sum = 0;            //参照窓内の輝度の総和
             double ref_ave = 0;         //参照窓内の輝度の平均
-            int ref_y = 0, ref_x = 0;   //参照窓の開始点
+            int ref_y = 0;
+            int ref_x = 0;              //参照窓の開始点
             //参照窓の開始点設定
             ref_y = cal_y + (cal_height - win_height) / 2;
             ref_x = cal_x + (cal_width - win_width) / 2;
@@ -153,7 +155,7 @@ int main()
             {
                 for ( j = 0; j < win_width; j++)
                 {
-                    // ref[i][j] = 0;                              //初期化
+                    ref[i][j] = 0;                              //初期化
                     ref[i][j] = FOR[ref_y + i][ref_x + j];      //格納
                     ref_sum = ref_sum + ref[i][j];              //総和計算
                 }
@@ -173,7 +175,8 @@ int main()
             //探査窓
             int inter_sum = 0;              //探査窓内の輝度の総和
             double inter_ave = 0;           //探査窓内の輝度の平均
-            int inter_y = 0, inter_x = 0;   //探査窓の開始点
+            int inter_y = 0;
+            int inter_x = 0;                //探査窓の開始点
             //探査窓の走査
             for (k = 0; k < win_yq; k++)
             {
@@ -182,12 +185,14 @@ int main()
                     //探査窓開始点の設定
                     inter_y = cal_y + k * inter_OW;
                     inter_x = cal_x + l * inter_OW;
+                    inter_sum = 0;
+                    inter_ave = 0;
                     //探査窓の格納
                     for (i = 0; i < win_height; i++)
                     {
                         for (j = 0; j < win_width; j++)
                         {
-                            // inter[i][j] = 0;                                //初期化
+                            inter[i][j] = 0;                                //初期化
                             inter[i][j] = cal[inter_y + i][inter_x + j];    //格納
                             inter_sum = inter_sum + inter[i][j];            //総和計算
                         } 
@@ -241,7 +246,7 @@ int main()
             u[p][q] = (((cal_y + corr_y[p][q] * inter_OW * win_height) - ref_y) * FPS) * MPP;
             v[p][q] = (((cal_x + corr_x[p][q] * inter_OW * win_width) - ref_x) * FPS) * MPP;
 
-            U[p][q] = sqrt(u[p][q] * u[p][q] + v[p][q] * v[p][q]);
+            U[p][q] = sqrt(u[p][q] * u[p][q] + v[p][q] * v[p][q]);                              //速度の絶対値
 
             //デバッグ用
             printf("\n CAL(%d , %d)(x,y) = (%d ,%d) ,REF(x,y) = (%d ,%d)\n ", p, q, cal_x, cal_y, ref_x, ref_y);

@@ -9,7 +9,7 @@ date:2021.04.19
 #include <time.h>
 const int width = 1024;
 const int height = 1024;
-const int t = 10;
+const int t = 50;
 const char *input_image = "base.bmp";           // name of input file
 const char *output_image1 = "ParticleMap1.bmp"; // name of output file
 const char *output_image2 = "ParticleMap2.bmp"; // name of output file

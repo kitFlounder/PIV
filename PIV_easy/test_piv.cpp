@@ -13,10 +13,10 @@ const double MPP = 0.01;   //1ピクセルごとの距離(m)
 
 const int width = 1024;         //画像幅
 const int height = 1024;        //画像高さ
-const int cal_width = 64;      //計算格子幅
-const int cal_height = 64;     //計算格子高さ
-const int win_width = 32;       //探査窓・参照窓幅
-const int win_height = 32;      //探査窓・参照窓高さ
+const int cal_width = 128;      //計算格子幅
+const int cal_height = 128;     //計算格子高さ
+const int win_width = 64;       //探査窓・参照窓幅
+const int win_height = 64;      //探査窓・参照窓高さ
 
 const double cal_OW = 0.5;      //計算格子オーバーラップ率
 const int inter_OW = 1;      //探査窓移動幅(<inter_height,inter_width)
@@ -183,8 +183,8 @@ int main()
                 for (l = 0; l < win_xq; l++)
                 {
                     //探査窓開始点の設定
-                    inter_y = cal_y + k * inter_OW;
-                    inter_x = cal_x + l * inter_OW;
+                    inter_y =  k * inter_OW;
+                    inter_x =  l * inter_OW;
                     inter_sum = 0;
                     inter_ave = 0;
                     //探査窓の格納
@@ -243,8 +243,8 @@ int main()
             }
 
             //計算格子毎の速度ベクトル(ピクセル)の算出(参照窓と相関係数最大の探査窓の開始点の変位を使用)
-            u[p][q] = (((cal_y + corr_y[p][q] * inter_OW * win_height) - ref_y) * FPS) * MPP;
-            v[p][q] = (((cal_x + corr_x[p][q] * inter_OW * win_width) - ref_x) * FPS) * MPP;
+            u[p][q] = (((cal_y + corr_y[p][q] * inter_OW) - ref_y) * FPS) * MPP;
+            v[p][q] = (((cal_x + corr_x[p][q] * inter_OW) - ref_x) * FPS) * MPP;
 
             U[p][q] = sqrt(u[p][q] * u[p][q] + v[p][q] * v[p][q]);                              //速度の絶対値
 

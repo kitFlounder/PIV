@@ -7,10 +7,10 @@ DATE: 2018.08.01
 #include <sys/stat.h>
 const int width = 1024;     //画像幅
 const int height = 1024;    //画像高さ
-const int cal_width = 64;  //計算格子幅
-const int cal_height = 64; //計算格子高さ
-const int win_width = 32;   //探査窓・参照窓幅
-const int win_height = 32;  //探査窓・参照窓高さ
+const int cal_width = 128;  //計算格子幅
+const int cal_height = 128; //計算格子高さ
+const int win_width = 64;   //探査窓・参照窓幅
+const int win_height = 64;  //探査窓・参照窓高さ
 const double cal_OW = 0.5;  //計算格子オーバーラップ率
 const double inter_OW = 0.5; //探査窓オーバーラップ率
 
@@ -23,7 +23,7 @@ const int x_max = width / (cal_width * cal_OW) - (1 / cal_OW - 1); //x range max
 const int y_min = -1;                                    //y range min
 const int y_max = height / (cal_height * cal_OW) - (1 / cal_OW - 1); //y range max
 const int cb_min = 0;                                   //color bar range min
-const float cb_max = 1.5;                               //color bar range max
+const float cb_max = 0.01;                               //color bar range max
 const char *read_file_dir = "01_plot_2dvec_vector";
 const char *read_file_header = "2dvec_vector";
 const char *write_file_dir = "02_2dvec_vector_map";
@@ -73,7 +73,6 @@ int main()
         fprintf(gp, "set cbrange['%d':'%f']\n", cb_min, cb_max);
         fprintf(gp, "set colorbox vertical user origin 0.8, 0.2 size 0.025,0.6\n");
         fprintf(gp, "set palette rgbformulae 22,13,-31\n");
-
         fprintf(gp, "set pm3d map\n"); // <steps in scan>,<steps between scans>
         fprintf(gp, "splot '%s//%s.dat'  using 2:1:4:3:(sqrt($4*$4+$3*$3)) with pm3d, '%s//%s.dat' using ($2):($1):($1*0.0):(%lf*$4/sqrt($4*$4+$3*$3)):(%lf*$3/sqrt($4*$4+$3*$3)):($1*0.0) with vectors head filled lt 2 lc 'black' \n", read_file_dir, read_file_header, read_file_dir, read_file_header, v_r, v_r);
         fflush(gp);            //Clean up Data

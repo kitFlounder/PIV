@@ -194,7 +194,7 @@ int main()
                         //探査窓毎の相互相関係数の算出
                         double R = 0;       //参照窓・探査窓の平均差の積の総和
                         double R_inter = 0; //探査窓の平均差二乗の総和
-                        // corr[k][l] = 0;     //探査窓毎の相互相関係数の初期化
+                        corr[k][l] = 0;     //探査窓毎の相互相関係数の初期化
 
                         for (i = 0; i < win_height; i++)
                         {
@@ -206,8 +206,8 @@ int main()
                         }
                         R_inter = sqrt(R_inter);
                         corr[k][l] = R / ((R_ref) * (R_inter)); //相互相関係数計算
-                        //デバッグ用　探査窓毎の相関係数表示
-                        printf("CAL(%d , %d),INTER(%d , %d),(x,y) = (%d , %d),corr=%lf,R=%lf,R_ref=%lf,R_inter=%lf \n ", p, q, k, l, inter_x, inter_y, corr[k][l], R, R_ref, R_inter);
+                        //探査窓毎の相関係数表示
+                        //printf("CAL(%d , %d),INTER(%d , %d),(x,y) = (%d , %d),corr=%lf,R=%lf,R_ref=%lf,R_inter=%lf \n ", p, q, k, l, inter_x, inter_y, corr[k][l], R, R_ref, R_inter);
                         //次の探査窓へ
                     }
                 }
@@ -236,17 +236,16 @@ int main()
                 //計算格子毎の速度ベクトル(ピクセル)の算出(参照窓と相関係数最大の探査窓の開始点の変位を使用)
                 u[p][q] = (((cal_y + corr_y[p][q] * inter_OW) - ref_y) * FPS) * MPP;
                 v[p][q] = (((cal_x + corr_x[p][q] * inter_OW) - ref_x) * FPS) * MPP;
+                U[p][q] = sqrt(u[p][q] * u[p][q] + v[p][q] * v[p][q]);                      //速度の絶対値
 
-                U[p][q] = sqrt(u[p][q] * u[p][q] + v[p][q] * v[p][q]); //速度の絶対値
-
-                //デバッグ用
-                printf("\n CAL(%d , %d)(x,y) = (%d ,%d) ,REF(x,y) = (%d ,%d)\n ", p, q, cal_x, cal_y, ref_x, ref_y);
-                printf("CAL(%d , %d)MAX(x,y) =(%d,%d),MAX = %lf \n", p, q, corr_x[p][q], corr_y[p][q], max[p][q]);
-                printf("CAL(%d , %d)u(x,y) =(%lf,%lf) \n\n", p, q, u[p][q], v[p][q]);
+                //計算格子毎の相互相関係数・速度ベクトルの表示
+                //printf("\n CAL(%d , %d)(x,y) = (%d ,%d) ,REF(x,y) = (%d ,%d)\n ", p, q, cal_x, cal_y, ref_x, ref_y);
+                //printf("CAL(%d , %d)MAX(x,y) =(%d,%d),MAX = %lf \n", p, q, corr_x[p][q], corr_y[p][q], max[p][q]);
+                //printf("CAL(%d , %d)u(x,y) =(%lf,%lf) \n\n", p, q, u[p][q], v[p][q]);
                 //次の計算格子へ
             }
         }
-
+        //計算格子毎の相互相関係数
         for (i = 0; i < cal_yq; i++)
         {
             for (j = 0; j < cal_xq; j++)
@@ -255,7 +254,7 @@ int main()
             }
         }
 
-        //2画像ごとの速度ベクトルのdat出力
+        //画像組ごとの速度ベクトルのdat出力
         sprintf(OUT_file, "%s//%s%04d.dat", output_image_dir, output_image_header,im);
         printf("%s//%s%04d.dat\n", output_image_dir, output_image_header,im);
         outfile = fopen(OUT_file, "w");
@@ -268,7 +267,7 @@ int main()
             fprintf(outfile, "\n");
         }
         fclose(outfile);
-    }
-    //次の画像組へ
+        //次の画像組へ
+    }    
     return 0;
 }

@@ -24,6 +24,7 @@ const int inter_OW = 1;    //探査窓移動幅(<inter_height,inter_width)
 
 unsigned char FOR[height][width];           //前方画像格納部
 unsigned char NEXT[height][width];          //後方画像格納部
+unsigned char MIN[height][width];           //最小画像格納部
 unsigned char cal[cal_height][cal_width];   //計算格子格納部
 unsigned char ref[win_height][win_width];   //参照窓格納部
 unsigned char inter[win_height][win_width]; //探査窓格納部
@@ -49,14 +50,17 @@ const char *output_image_header = "vector.bmp";       //出力する速度場画
 unsigned char header_buf[1078];
 unsigned char image_in1[height][width]; //前方画像格納部
 unsigned char image_in2[height][width]; //後方画像格納部
+unsigned char image_min[height][width];
 unsigned char image_out[height][width]; //出力画像格納部
 
 char FOR_file[100];
 char NEXT_file[100];
+char MIN_file[100];
 char OUT_file[100];
 
 FILE *infile1;
 FILE *infile2;
+FILE *infile3;
 FILE *readfile;
 FILE *outfile;
 FILE *gp;
@@ -64,6 +68,31 @@ FILE *gp;
 int main()
 {
     int im; //連続画像読込に使用
+    int i, j; //画像・計算格子・窓の読込に使用
+    int k, l; //探査窓の走査に使用
+    int p, q; //計算格子の走査に使用
+
+    //read background picture
+    for (i = 0; i < height; i++)
+    {
+        for (j = 0; j < width; j++)
+        {
+            MIN[i][j] = 0;
+        }
+    }
+    sprintf(MIN_file, "%s//%s%04d.bmp", input_image_dir, input_image_header, im);
+    infile3 = fopen(MIN_file, "rb");
+    if (infile3 == NULL)
+    {
+        printf("No such an input_image! \n ");
+        return (0);
+    }                                                        //Notice file missing
+    fread(header_buf, sizeof(unsigned char), 1078, infile3); // Read Header
+    fread(image_min, sizeof(image_min), 1, infile3);         // Read 8 bit image intensity
+    fclose(infile3);
+
+
+    //PIV main part
     for (im = 0; im < n - 1; im++)
     {
         //1枚目の画像読み込み
@@ -79,7 +108,7 @@ int main()
         fclose(infile1);
 
         //2枚目の画像読み込み
-        sprintf(NEXT_file, "%s//%s%04d.bmp", output_image_dir, output_image_header, im + 1);
+        sprintf(NEXT_file, "%s//%s%04d.bmp", input_image_dir, input_image_header, im + 1);
         infile2 = fopen(NEXT_file, "rb");
         if (infile2 == NULL)
         {
@@ -90,10 +119,6 @@ int main()
         fread(image_in2, sizeof(image_in2), 1, infile2);         // Read 8 bit image intensity
         fclose(infile2);
 
-        int i, j; //画像・計算格子・窓の読込に使用
-        int p, q; //計算格子の走査に使用
-        int k, l; //探査窓の走査に使用
-
         //前方画像格納
         for (i = 0; i < height; i++)
         {
@@ -101,6 +126,7 @@ int main()
             {
                 FOR[i][j] = 0;               //初期化
                 FOR[i][j] = image_in1[i][j]; //格納
+                FOR[i][j] = FOR[i][j] - MIN[i][j];
             }
         }
         //後方画像格納
@@ -110,6 +136,7 @@ int main()
             {
                 NEXT[i][j] = 0;               //初期化
                 NEXT[i][j] = image_in2[i][j]; //格納
+                NEXT[i][j] = NEXT[i][j] - MIN[i][j];
             }
         }
 

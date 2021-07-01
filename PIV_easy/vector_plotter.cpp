@@ -12,7 +12,7 @@ const int cal_height = 128; //計算格子高さ
 const int win_width = 64;   //探査窓・参照窓幅
 const int win_height = 64;  //探査窓・参照窓高さ
 const double cal_OW = 0.5;  //計算格子オーバーラップ率
-const double inter_OW = 0.5; //探査窓オーバーラップ率
+const double inter_OW = 1; //探査窓オーバーラップ率
 
 const char *xxlabel = "{/Times-New-Roman:Italic=20 x} [pixel]";
 const char *yylabel = "{/Times-New-Roman:Italic=20 y} [pixel]";

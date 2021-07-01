@@ -267,7 +267,6 @@ int main()
         
     }
     
-    
     sprintf(read_file, "%s//%s.dat", read_file_dir, read_file_header);
     printf("%s//%s.dat\n", read_file_dir, read_file_header);
 

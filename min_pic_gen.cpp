@@ -41,12 +41,11 @@ FILE *gp;
 
 int main()
 {
-    //PIV
     int im;   //連続画像読込に使用
     int i, j; //画像・計算格子・窓の読込に使用
     int p, q; //計算格子の走査に使用
     int k, l; //探査窓の走査に使用
-    //初期画像読み込み
+    //初期最小画像読み込み
     sprintf(FOR_file, "%s//%s%04d.bmp", input_image_dir, input_image_header, 0);
     infile1 = fopen(FOR_file, "rb");
     if (infile1 == NULL)
@@ -57,7 +56,7 @@ int main()
     fread(header_buf, sizeof(unsigned char), 1078, infile1); // Read Header
     fread(image_in1, sizeof(image_in1), 1, infile1);         // Read 8 bit image intensity
     fclose(infile1);
-    //前方画像格納
+    //初期最小画像格納
     for (i = 0; i < height; i++)
     {
         for (j = 0; j < width; j++)
@@ -81,7 +80,7 @@ int main()
         fread(image_in2, sizeof(image_in2), 1, infile2);         // Read 8 bit image intensity
         fclose(infile2);
 
-        //後方画像格納
+        //比較画像格納
         for (i = 0; i < height; i++)
         {
             for (j = 0; j < width; j++)

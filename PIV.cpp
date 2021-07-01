@@ -139,6 +139,7 @@ int main()
                 NEXT[i][j] = NEXT[i][j] - MIN[i][j];
             }
         }
+        //ヒストグラム平坦化
 
         //計算格子
         int cal_y = 0;
@@ -280,6 +281,8 @@ int main()
                 printf("CAL(%d , %d):corr(%d,%d) = %lf \n", i, j, corr_x[i][j], corr_y[i][j], max[i][j]);
             }
         }
+
+        //誤ベクトルの除去
 
         //画像組ごとの速度ベクトルのdat出力
         sprintf(OUT_file, "%s//%s%04d.dat", output_image_dir, output_image_header,im);

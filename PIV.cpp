@@ -292,7 +292,7 @@ int main()
         {
             for (j = 0; j < (width / (cal_width * cal_OW)) - 1; j++)
             {
-                fprintf(outfile, "%d \t %d \t %.5lf \t %.5lf \t  \n", i, j, u[i][j], v[i][j]);
+                fprintf(outfile, "%d \t %d \t %.5lf \t %.5lf \t %.5lf \t  \n", i, j, u[i][j], v[i][j], sqrt(u[i][j] * u[i][j] + v[i][j] * v[i][j]));
             }
             fprintf(outfile, "\n");
         }

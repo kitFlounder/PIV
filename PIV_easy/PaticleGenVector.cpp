@@ -9,7 +9,7 @@ date:2021.04.19
 #include <time.h>
 const int width = 1024;
 const int height = 1024;
-const int t = 50;
+const int t = 10;
 const char *input_image = "base.bmp";           // name of input file
 const char *output_image1 = "ParticleMap1.bmp"; // name of output file
 const char *output_image2 = "ParticleMap2.bmp"; // name of output file
@@ -22,9 +22,26 @@ const int mpp = 2; //micrometer per pixel
 unsigned char header_buf[1078];
 unsigned char image_out1[height][width];
 unsigned char image_out2[height][width];
+
+const int cal_width = 128;  //計算格子幅
+const int cal_height = 128; //計算格子高さ
+
+// const int cal_yq = height / (cal_height * cal_OW) - (1 / cal_OW - 1); //計算格子の個数
+// const int cal_xq = width / (cal_width * cal_OW) - (1 / cal_OW - 1);   //計算格子の個数
+// const double cal_OW = 0.5;                                            //計算格子オーバーラップ率
+
+// double u[cal_yq][cal_xq]; //計算格子毎のx方向速度
+// double v[cal_yq][cal_xq]; //計算格子毎のy方向速度
+// double U[cal_yq][cal_xq];
+
+const char *read_file_dir = "01_plot_2dvec_vector";
+const char *read_file_header = "2dvec_vector";
+
 FILE *infile;
 FILE *outfile1;
 FILE *outfile2;
+FILE *readfile;
+FILE *outfile;
 int brightness(int n, int m);
 int main()
 {
@@ -49,8 +66,8 @@ int main()
         {
             x = width * (double)rand() / RAND_MAX;
             y = height * (double)rand() / RAND_MAX;
-            u = t * sin(M_PI * x / width) * cos(M_PI * y / height);
-            v = - t * cos(M_PI * x / width) * sin(M_PI * y / height);
+            u = t * sin(2 * M_PI * x / (width)) * cos(2 * M_PI * y / (height));
+            v = -t * cos(2 * M_PI * x / (width)) * sin(2 * M_PI * y / (height));
             x2 = x + (int)u;
             y2 = y + (int)v;
             a = (a_max - a_min + 1) * ((double)rand() / RAND_MAX) + a_min; //brightness
@@ -127,6 +144,7 @@ int main()
 
     return (0);
 }
+
 int brightness(int n, int m)
 {
     if (n > m)

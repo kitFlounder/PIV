@@ -72,7 +72,8 @@ int main()
     int k, l; //探査窓の走査に使用
     int p, q; //計算格子の走査に使用
 
-    //read background picture
+    //前処理
+    //最小画像作成
     for (i = 0; i < height; i++)
     {
         for (j = 0; j < width; j++)
@@ -90,6 +91,8 @@ int main()
     fread(header_buf, sizeof(unsigned char), 1078, infile3); // Read Header
     fread(image_min, sizeof(image_min), 1, infile3);         // Read 8 bit image intensity
     fclose(infile3);
+
+    //ヒストグラム平坦化
 
 
     //PIV main part
@@ -273,6 +276,8 @@ int main()
                 //次の計算格子へ
             }
         }
+
+        //後処理
         //計算格子毎の相互相関係数出力
         for (i = 0; i < cal_yq; i++)
         {
@@ -283,6 +288,8 @@ int main()
         }
 
         //誤ベクトルの除去
+
+        //サブピクセル補間
 
         //画像組ごとの速度ベクトルのdat出力
         sprintf(OUT_file, "%s//%s%04d.dat", output_image_dir, output_image_header,im);
